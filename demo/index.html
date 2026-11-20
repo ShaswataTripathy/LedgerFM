@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LedgerFM Risk Demo</title>
+<style>
+  :root { --bg:#f7f7f5; --card:#ffffff; --ink:#1d1f23; --muted:#5f6670; --line:#e3e3df; --accent:#3b5bdb; --accent-ink:#ffffff;
+          --ok:#2b8a3e; --err:#c92a2a; --risk-hi:#e03131; --risk-lo:#e9ecef; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#15171a; --card:#1d2024; --ink:#e8e9eb; --muted:#9aa1ab; --line:#2e3238; --accent:#748ffc; --accent-ink:#0d0f12;
+    --ok:#69db7c; --err:#ff8787; --risk-hi:#ff6b6b; --risk-lo:#2e3238; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 24px; max-width: 70ch; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px; }
+  .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+  button, .file { font:inherit; border-radius:8px; padding:9px 16px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; }
+  button.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600; }
+  .file input { display:none; }
+  label.chk { color:var(--muted); display:flex; gap:6px; align-items:center; }
+  .barwrap { height:6px; background:var(--risk-lo); border-radius:3px; overflow:hidden; margin:16px 0 8px; }
+  #bar { height:100%; width:0; background:var(--accent); transition: width .2s; }
+  .status { color:var(--muted); min-height:1.5em; } .status.ok { color:var(--ok); } .status.err { color:var(--err); }
+  .tablewrap { overflow-x:auto; margin-top:12px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; }
+  td.num { text-align:right; font-variant-numeric: tabular-nums; }
+  .pill { display:inline-block; min-width:52px; text-align:center; padding:1px 6px; border-radius:10px; font-weight:600;
+          background: color-mix(in srgb, var(--risk-hi) calc(var(--p) * 85%), var(--risk-lo)); }
+  code { background:var(--risk-lo); padding:1px 5px; border-radius:4px; font-size:.9em; }
+  ul { padding-left: 20px; margin: 8px 0; } li { margin: 2px 0; }
+  .note { color:var(--muted); font-size:13px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>LedgerFM transaction risk demo</h1>
+  <p class="sub"><a href="https://huggingface.co/tripathyShaswata/LedgerFM">LedgerFM</a> is an open foundation model for transaction sequences. It reads each account's history and scores every transaction. Everything runs <b>in your browser</b>: your file never leaves your device.</p>
+
+  <div class="card">
+    <div class="row">
+      <button class="primary" id="example">Try the example (16 cards)</button>
+      <label class="file">Upload your CSV…<input type="file" id="file" accept=".csv,text/csv"></label>
+      <label class="chk"><input type="checkbox" id="wantEmb"> also compute 256-d embeddings</label>
+    </div>
+    <div class="barwrap"><div id="bar"></div></div>
+    <div id="status" class="status">Ready.</div>
+  </div>
+
+  <div class="card" id="results" hidden>
+    <div id="summary"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="dlScores">Download all scores (CSV)</button>
+      <button id="dlEmb" hidden>Download embeddings (CSV)</button>
+    </div>
+    <div class="tablewrap"><table id="table"></table></div>
+    <p class="note">The 50 highest-risk transactions. Each score uses only that account's <i>earlier</i> transactions.</p>
+  </div>
+
+  <div class="card">
+    <b>CSV format</b>: one row per transaction.
+    <ul>
+      <li>Required: <code>txn_id</code>, <code>ts</code> (e.g. 2024-01-31 13:45:00), <code>account</code> (card or customer), <code>counterparty</code> (merchant or receiver), <code>amount</code>.</li>
+      <li>Optional: <code>currency</code>, <code>category</code>, <code>channel</code>, <code>location</code>, <code>src_bank</code>, <code>dst_bank</code>, <code>currency_recv</code>, <code>amount_recv</code>, <code>errors</code>, and <code>label</code> (1 = fraud) to see how well the score ranks it.</li>
+      <li>Up to 20,000 rows. For more, use <code>pip install ledgerfm</code>.</li>
+    </ul>
+    <p class="note">⚠️ The risk score comes from a LedgerFM model fine-tuned on <b>synthetic US card fraud</b> (Sparkov). It is a demonstration, not calibrated for other payment types. On your own data, fine-tune LedgerFM or add its embeddings to your model.
+    The example cards come from Sparkov's test period (late Aug–Dec 2020), which the model never saw.
+    Models are int8-quantised ONNX (risk score within 0.007 of the PyTorch model).<br>
+    <a href="https://huggingface.co/tripathyShaswata/LedgerFM">Model card &amp; results</a> · <a href="https://github.com/ShaswataTripathy/LedgerFM">GitHub</a> ·
+    <a href="https://colab.research.google.com/github/ShaswataTripathy/LedgerFM/blob/main/notebooks/LedgerFM_quickstart.ipynb">Colab notebook</a> · <code>pip install ledgerfm</code></p>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+<script src="tokenizer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

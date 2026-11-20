@@ -11,6 +11,9 @@ LedgerFM reads an account's transaction history and returns a 256-dimensional em
 pip install ledgerfm
 ```
 
+- Live in-browser demo: https://huggingface.co/spaces/tripathyShaswata/LedgerFM-demo
+- Colab walkthrough: https://colab.research.google.com/github/ShaswataTripathy/LedgerFM/blob/main/notebooks/LedgerFM_quickstart.ipynb
+
 ## Embed transactions
 
 ```python

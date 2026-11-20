@@ -74,6 +74,8 @@ The tokenizer uses no dataset statistics (fixed transforms and md5 hashing), so 
 
 ## Usage
 
+**[Live demo](https://huggingface.co/spaces/tripathyShaswata/LedgerFM-demo)**: score a CSV of transactions in your browser. It runs locally with ONNX and your data never leaves your device.
+
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ShaswataTripathy/LedgerFM/blob/main/notebooks/LedgerFM_quickstart.ipynb): a 5-minute walkthrough on 1.85M public card transactions ([demo dataset](https://huggingface.co/datasets/tripathyShaswata/ledgerfm-demo-sparkov)). On test PR-AUC, XGBoost on per-transaction fields scores 0.796; adding LedgerFM embeddings brings it to 0.943.
 
 ```bash

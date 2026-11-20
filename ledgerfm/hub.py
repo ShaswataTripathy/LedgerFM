@@ -38,10 +38,32 @@ class _Store:
     eval_chunks = _T.eval_chunks
 
 
+REQUIRED = ["txn_id", "ts", "account", "counterparty", "amount"]
+_STR = ["account", "counterparty", "currency", "currency_recv", "category", "channel", "location", "instrument",
+        "src_bank", "dst_bank", "errors"]
+
+
+def canonical(df: pl.DataFrame) -> pl.DataFrame:
+    """Normalise user input to the canonical schema: ids/categoricals as strings (CSV readers often turn card numbers
+    into integers), missing optional columns added as null (currency defaults to USD), ts parsed if given as text."""
+    miss = [c for c in REQUIRED if c not in df.columns]
+    if miss:
+        raise ValueError(f"missing required columns {miss}; required: {REQUIRED}")
+    ts = pl.col("ts").str.to_datetime(strict=False) if df["ts"].dtype == pl.String else pl.col("ts")
+    cols = [pl.col("txn_id").cast(pl.Int64), ts.cast(pl.Datetime("us")).alias("ts"), pl.col("amount").cast(pl.Float64),
+            (pl.col("amount_recv").cast(pl.Float64) if "amount_recv" in df.columns else pl.lit(None, pl.Float64)).alias("amount_recv")]
+    for c in _STR:
+        cols.append((pl.col(c).cast(pl.String) if c in df.columns else pl.lit("USD" if c == "currency" else None, pl.String)).alias(c))
+    out = df.with_columns(cols)
+    if out["ts"].null_count():
+        raise ValueError("could not parse some ts values; use e.g. 2024-01-31 13:45:00")
+    return out
+
+
 def embed(fm, df: pl.DataFrame, bs=64) -> pl.DataFrame:
     """df: canonical rows (txn_id, ts, account, counterparty, amount, currency, ... see README).
     Returns txn_id + emb0..emb{d-1} (float32), one row per input transaction."""
-    ctx = context_columns(df)
+    ctx = context_columns(canonical(df))
     ints, fl = tokenize(ctx)
     st = _Store(ints, fl, ctx["account"].to_numpy())
     H = np.full((st.N, fm.c.d), np.nan, np.float32)
