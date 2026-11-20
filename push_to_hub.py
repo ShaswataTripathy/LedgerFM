@@ -20,7 +20,7 @@ if __name__ == "__main__":
     create_repo(a.repo_id, exist_ok=True)
     with tempfile.TemporaryDirectory() as t:
         t = pathlib.Path(t)
-        for p in ["ledgerfm", "models", "build", "results", "docs", "examples"]:
+        for p in ["ledgerfm", "models", "build", "results", "docs", "examples", "notebooks"]:
             shutil.copytree(ROOT / p, t / p, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         for f in ["LICENSE", "requirements.txt", "push_to_hub.py", "pyproject.toml", "PYPI.md"]:
             shutil.copy(ROOT / f, t / f)
