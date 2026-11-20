@@ -75,15 +75,23 @@ The tokenizer uses no dataset statistics (fixed transforms and md5 hashing), so 
 ## Usage
 
 ```bash
-pip install -r requirements.txt
-python examples/quickstart.py
+pip install ledgerfm
 ```
 
 ```python
-from ledgerfm.hub import load, embed
-fm = load("tripathyShaswata/LedgerFM")   # 106 MB safetensors
+from ledgerfm import load, embed, Blend
+fm = load()                              # tripathyShaswata/LedgerFM, 106 MB safetensors
 E = embed(fm, df)                        # polars: txn_id, emb0..emb255
+
+b = Blend().fit(y_val, p_fm_val, p_xgb_val)   # weight chosen on validation
+score = b.predict(p_fm_new, p_xgb_new)
 ```
+
+```bash
+ledgerfm embed transactions.parquet embeddings.parquet --pca 32   # command line
+```
+
+To work from the repo instead: `pip install -r requirements.txt` and `python examples/quickstart.py`.
 
 Recommended recipe, as used for the results above:
 1. Fine-tune with `models/finetune.py` (sequence classifier: the encoder plus a linear head, 6k steps). Separately, train XGBoost on your tabular features.

@@ -22,7 +22,7 @@ if __name__ == "__main__":
         t = pathlib.Path(t)
         for p in ["ledgerfm", "models", "build", "results", "docs", "examples"]:
             shutil.copytree(ROOT / p, t / p, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
-        for f in ["LICENSE", "requirements.txt", "push_to_hub.py"]:
+        for f in ["LICENSE", "requirements.txt", "push_to_hub.py", "pyproject.toml", "PYPI.md"]:
             shutil.copy(ROOT / f, t / f)
         for f in ["model.safetensors", "config.json"]:
             shutil.copy(ROOT / "weights" / f, t / f)

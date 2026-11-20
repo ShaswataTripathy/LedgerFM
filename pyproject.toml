@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ledgerfm"
+version = "0.1.1"
+description = "Open foundation model for transaction sequences (fraud / anti-money-laundering)"
+readme = "PYPI.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Shaswata Tripathy" }]
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.4",
+  "polars>=1.0",
+  "numpy>=1.26",
+  "safetensors>=0.4",
+  "huggingface_hub>=0.24",
+]
+keywords = ["fraud-detection", "anti-money-laundering", "aml", "transactions", "foundation-model", "embeddings"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Financial and Insurance Industry",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Office/Business :: Financial",
+]
+
+[project.optional-dependencies]
+train = ["xgboost>=2.0", "scikit-learn>=1.4"]
+
+[project.scripts]
+ledgerfm = "ledgerfm.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ShaswataTripathy/LedgerFM"
+Model = "https://huggingface.co/tripathyShaswata/LedgerFM"
+Issues = "https://github.com/ShaswataTripathy/LedgerFM/issues"
+
+[tool.setuptools]
+packages = ["ledgerfm"]
