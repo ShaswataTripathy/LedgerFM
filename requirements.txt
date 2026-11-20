@@ -1,0 +1,7 @@
+torch>=2.4
+polars>=1.0
+numpy>=1.26
+safetensors>=0.4
+huggingface_hub>=0.24
+xgboost>=2.0
+scikit-learn>=1.4
